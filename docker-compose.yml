@@ -1,0 +1,9 @@
+services:
+  notion-api:
+    build: .
+    ports:
+    - "3000:3000"
+    environment:
+      - NOTION_API_KEY=${NOTION_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      
