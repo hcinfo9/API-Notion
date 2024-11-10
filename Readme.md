@@ -60,9 +60,9 @@ Este projeto é uma API que acessa um banco de dados no Notion, desenvolvido com
    
   </br>
   
-   Endpoints:
+  ## Endpoints:
 
-  ## Execute o acesso as rotas pela API Swagger, ou utilize PostMan ou Insomnia por exemplo, outra coisa a autentificação é opcional caso não queira realiza-la pode utilizar as rotas sem a necessidade de inserir um token, abaixo deixarei um exemplo para execução de cada rota da API.
+   - Execute o acesso as rotas pela API Swagger, ou utilize PostMan ou Insomnia por exemplo, outra coisa a autentificação é opcional caso não queira realiza-la pode utilizar as rotas sem a necessidade de inserir um token, abaixo deixarei um exemplo para execução de cada rota da API.
    
    - Registro de Usuário: POST /auth/register
 
@@ -185,8 +185,14 @@ Siga as etapas para instalar e executar o projeto localmente:
       ```
       
    </br>
+
+   4. Instale as dependências:
+       
+      ```bash
+         npm run lint
+      ```
    
-   4. Cria e inicie o container docker rodando o Servidor Node com NestJS:
+   5. Cria e inicie o container docker rodando o Servidor Node com NestJS:
    
        ```bash
          docker-compose up --build
