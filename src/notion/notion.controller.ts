@@ -10,7 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { NotionService } from '../notion/notion.service';
-import { JwtAuthGuard, OptionalAuth } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard, OptionalAuth } from '../auth/guards/jwt-auth.guard';
 import { NotionSchema } from './schema/notion.schema';
 
 @Controller('notion')
