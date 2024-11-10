@@ -80,15 +80,18 @@ export class AuthService {
         };
   }
 
-  async logout(email: string) {
-    const result = await this.redisClient.del(`user:${email}`);
+  async deletar(createAuthDto: CreateAuthDto) {
+    const result = await this.redisClient.del(
+      `user:${createAuthDto.email}`,
+      createAuthDto.password,
+    );
     return result
       ? {
-          message: 'Usuário deslogado com sucesso',
+          message: 'Usuário deletado com sucesso',
           statusCode: HttpStatus.OK,
         }
       : {
-          message: 'Erro ao deslogar usuário',
+          message: 'Erro ao deletar usuário',
           statusCode: HttpStatus.BAD_REQUEST,
         };
   }
