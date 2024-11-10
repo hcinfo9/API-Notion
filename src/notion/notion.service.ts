@@ -50,11 +50,6 @@ export class NotionService {
         properties: data,
       });
 
-      await this.redisClient.set(
-        `IdPage:${response.id}`,
-        JSON.stringify(response),
-      );
-
       return {
         sucess: true,
         data: response,
@@ -71,20 +66,10 @@ export class NotionService {
 
   async updateRecord(pageId: string, updateData: Record<string, any>) {
     try {
-      const exists = await this.redisClient.get(`IdPage:${pageId}`);
-      if (!exists) {
-        return {
-          success: false,
-          message: 'Registro não encontrado no Redis',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
-      }
       const response = await this.notion.pages.update({
         page_id: pageId,
         properties: updateData,
       });
-
-      await this.redisClient.set(`IdPage:${pageId}`, JSON.stringify(response));
 
       return {
         success: true,
@@ -102,21 +87,10 @@ export class NotionService {
 
   async deleteRecord(pageId: string) {
     try {
-      const exists = await this.redisClient.get(`IdPage:${pageId}`);
-      if (!exists) {
-        return {
-          success: false,
-          message: 'Registro não encontrado no Redis',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
-      }
-
       const response = await this.notion.pages.update({
         page_id: pageId,
         archived: true,
       });
-
-      await this.redisClient.del(`IdPage:${pageId}`);
 
       return { sucess: true, data: response };
     } catch (error) {

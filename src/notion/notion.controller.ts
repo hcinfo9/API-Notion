@@ -48,6 +48,7 @@ export class NotionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @OptionalAuth()
   @Post()
   async createRecord(@Body() body: Record<string, any>) {
     try {
@@ -63,6 +64,7 @@ export class NotionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @OptionalAuth()
   @Put(':id')
   async updateRecord(
     @Param('id') id: string,
@@ -81,6 +83,7 @@ export class NotionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @OptionalAuth()
   @Delete(':id')
   async deleteRecord(@Param('id') id: string) {
     try {
