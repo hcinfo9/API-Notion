@@ -16,7 +16,7 @@ Este projeto é uma API que acessa um banco de dados no Notion, desenvolvido com
 - **[TypeScript](https://www.typescriptlang.org/)**: É um superconjunto sintático estrito de JavaScript e adiciona tipagem estática opcional à linguagem
 - **[NesjJS](https://nestjs.com/)**: é um framework Node.js de código aberto destinado ao desenvolvimento de aplicativos do lado do servidor
 - **[Redis](https://redis.io/)**: armazena as informações em cache de forma temporaria.
-- **[Docker](https://www.docker.com/)**: Utilizado para criar uma imagem Postgres, do kraked assim permitindo executar o banco de dados e tendo a execução da API Gateway mesmo sem instala-lo na maquina.
+- **[Docker](https://www.docker.com/)**: Utilizado para rodar nossa aplicação num conteiner de forma isolada.
 - **[Jest](https://jestjs.io/pt-BR/)**: Utilizado para criar uma imagem Postgres, assim permitindo executar o banco de dados mesmo sem instala-lo na maquina.
 
   <br>
