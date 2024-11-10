@@ -36,8 +36,9 @@ Este projeto é uma API que acessa um banco de dados no Notion, desenvolvido com
 ## Funcionalidades
    
    Autenticação de Usuários:
-   - Registro: Permite que novos usuários se registrem.
+   - Registro: Permite que novos usuários se registrem e salva o email e senha do usuario no Redis.
    - Login: Permite que usuários existentes façam login e obtenham um token JWT com duração de 1 dia.
+   - Deletar: Permite excluir usuarios do Redis, assim sendo necessario se registrar novamente
      
    </br>
     
@@ -63,6 +64,10 @@ Este projeto é uma API que acessa um banco de dados no Notion, desenvolvido com
   ## Endpoints:
 
    - Execute o acesso as rotas pela API Swagger, ou utilize PostMan ou Insomnia por exemplo, outra coisa a autentificação é opcional caso não queira realiza-la pode utilizar as rotas sem a necessidade de inserir um token, abaixo deixarei um exemplo para execução de cada rota da API.
+
+
+
+
    
    - Registro de Usuário: POST /auth/register
 
@@ -81,6 +86,18 @@ Este projeto é uma API que acessa um banco de dados no Notion, desenvolvido com
 
       ```bash
              POST http://localhost:3000/auth/login  
+          
+          body:
+          '{
+              "email": "test@example.com", 
+              "password": "password123"
+          }'
+      ```
+
+   - Excluir conta de Usuário: Delete /auth/deletar
+
+      ```bash
+             DELETE http://localhost:3000/auth/deletar  
           
           body:
           '{
