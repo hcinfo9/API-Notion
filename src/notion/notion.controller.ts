@@ -8,10 +8,10 @@ import {
   Param,
   UseGuards,
   HttpStatus,
-  HttpException,
 } from '@nestjs/common';
 import { NotionService } from '../notion/notion.service';
 import { JwtAuthGuard, OptionalAuth } from 'src/auth/guards/jwt-auth.guard';
+import { NotionSchema } from './schema/notion.schema';
 
 @Controller('notion')
 export class NotionController {
@@ -19,22 +19,46 @@ export class NotionController {
 
   @UseGuards(JwtAuthGuard)
   @OptionalAuth()
-  @Get(':id')
+  @Get()
   async getAllRecords() {
     try {
       return await this.notionService.getAllRecords();
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        message: 'Erro ao buscar registros no Notion',
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @OptionalAuth()
+  @Get(':id')
+  async getRecordById(@Param('id') id: string) {
+    try {
+      return await this.notionService.getRecordById(id);
+    } catch (error) {
+      return {
+        message: 'Erro ao buscar registro no Notion',
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      };
     }
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createRecord(@Body() createData: Record<string, any>) {
+  async createRecord(@Body() body: Record<string, any>) {
     try {
-      return await this.notionService.createRecord(createData);
+      const notionPayload = NotionSchema(body);
+      return await this.notionService.createRecord(notionPayload);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        message: 'Erro ao tentar criar registro no Notion',
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      };
     }
   }
 
@@ -45,9 +69,14 @@ export class NotionController {
     @Body() updateData: Record<string, any>,
   ) {
     try {
-      return await this.notionService.updateRecord(id, updateData);
+      const notionPayload = NotionSchema(updateData);
+      return await this.notionService.updateRecord(id, notionPayload);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        message: 'Erro ao atualizar o registro no Notion',
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      };
     }
   }
 
@@ -57,7 +86,11 @@ export class NotionController {
     try {
       return await this.notionService.deleteRecord(id);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        message: 'Erro ao deletar o registro no Notion',
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      };
     }
   }
 }

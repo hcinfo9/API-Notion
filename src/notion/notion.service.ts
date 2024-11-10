@@ -1,8 +1,10 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Inject, HttpStatus } from '@nestjs/common';
 import { Client } from '@notionhq/client';
+import Redis from 'ioredis';
 
 @Injectable()
 export class NotionService {
+  constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
   private notion = new Client({ auth: process.env.NOTION_API_KEY });
   private databaseId: string = process.env.NOTION_DATABASE_ID;
 
@@ -11,84 +13,119 @@ export class NotionService {
       const response = await this.notion.databases.query({
         database_id: this.databaseId,
       });
-      return response.results;
+      return { sucess: true, data: response.results };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        success: false,
+        message: 'Erro ao tentar recuperar todos os registros no Banco Notion',
+        error: error.message,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
+
+  async getRecordById(pageId: string) {
+    try {
+      const response = await this.notion.pages.retrieve({ page_id: pageId });
+
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          'Erro ao tentar recuperar registro com base no ID no Banco Notion',
+        error: error.message,
+        statusCode: HttpStatus.NOT_FOUND,
+      };
     }
   }
 
   async createRecord(data: Record<string, any>) {
     try {
-      const properties = this.tranformDataFormatNotion(data);
-
       const response = await this.notion.pages.create({
         parent: { database_id: this.databaseId },
-        properties,
+        properties: data,
       });
-      return response;
+
+      await this.redisClient.set(
+        `IdPage:${response.id}`,
+        JSON.stringify(response),
+      );
+
+      return {
+        sucess: true,
+        data: response,
+      };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        success: false,
+        message: 'Erro ao tentar criar um novo registro no Banco Notion',
+        error: error.message,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
     }
   }
 
   async updateRecord(pageId: string, updateData: Record<string, any>) {
     try {
-      const properties = this.tranformDataFormatNotion(updateData);
+      const exists = await this.redisClient.get(`IdPage:${pageId}`);
+      if (!exists) {
+        return {
+          success: false,
+          message: 'Registro não encontrado no Redis',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      }
+      const response = await this.notion.pages.update({
+        page_id: pageId,
+        properties: updateData,
+      });
+
+      await this.redisClient.set(`IdPage:${pageId}`, JSON.stringify(response));
+
+      return {
+        success: true,
+        data: response,
+      };
+    } catch (error) {
+      return {
+        sucess: false,
+        message: 'Erro ao atualizar registro no Banco Notion',
+        error: error.message,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
+
+  async deleteRecord(pageId: string) {
+    try {
+      const exists = await this.redisClient.get(`IdPage:${pageId}`);
+      if (!exists) {
+        return {
+          success: false,
+          message: 'Registro não encontrado no Redis',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      }
 
       const response = await this.notion.pages.update({
         page_id: pageId,
-        properties,
-      });
-      return response;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async deleteRecord(id: string) {
-    try {
-      await this.notion.pages.update({
-        page_id: id,
         archived: true,
       });
-      return { message: 'Registro excluído com sucesso' };
+
+      await this.redisClient.del(`IdPage:${pageId}`);
+
+      return { sucess: true, data: response };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      return {
+        sucess: false,
+        message: 'Erro ao excluir registro no Banco Notion',
+        error: error.message,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
     }
-  }
-
-  private tranformDataFormatNotion(data: Record<string, any>) {
-    const transformed: Record<string, any> = {};
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-
-      transformed[key] = this.formatProperty(value);
-    });
-
-    return transformed;
-  }
-
-  private formatProperty(value: any) {
-    if (typeof value === 'string') {
-      return { title: [{ text: { content: value } }] };
-    }
-    if (typeof value === 'number') {
-      return { number: value };
-    }
-    if (Array.isArray(value)) {
-      return { multi_select: value.map((item) => ({ name: item })) };
-    }
-    if (value instanceof Date) {
-      return { date: { start: value.toISOString() } };
-    }
-    if (typeof value === 'boolean') {
-      return { checkbox: value };
-    }
-    if (typeof value === 'object' && value.url) {
-      return { url: value.url };
-    }
-
-    return { rich_text: [{ text: { content: String(value) } }] };
   }
 }

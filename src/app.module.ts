@@ -5,9 +5,9 @@ import { NotionModule } from './notion/notion.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  "imports": [
+  imports: [
     ConfigModule.forRoot({
-      "isGlobal": true,
+      isGlobal: true,
     }),
     RedisModule,
     AuthModule,

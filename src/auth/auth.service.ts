@@ -5,6 +5,7 @@ import { User } from 'src/interface/user.interface';
 import * as bcrypt from 'bcrypt';
 import { omit } from 'lodash';
 import Redis from 'ioredis';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +44,7 @@ export class AuthService {
       email: user.email,
     };
     return {
+      message: 'Login realizado com sucesso',
       access_token: this.jwtService.sign(payload),
     };
   }
@@ -53,22 +55,41 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new Error('Usuário já existe');
+      return {
+        message:
+          'Usuário já existe, Não é possivel criar um usuário com o mesmo email',
+      };
     }
 
     const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
-    const newUser = await this.redisClient.set(
-      `e-mail:${createAuthDto.email}`,
-      `password:${hashedPassword}`,
+    const newUser: User = {
+      email: createAuthDto.email,
+      password: hashedPassword,
+    };
+
+    const result = await this.redisClient.set(
+      `user:${createAuthDto.email}`,
+      JSON.stringify(newUser),
     );
 
-    return omit([newUser, 'password']);
+    return result
+      ? { message: `Usuário criado com sucesso`, statusCode: HttpStatus.OK }
+      : {
+          message: 'Erro ao criar usuário',
+          statusCode: HttpStatus.BAD_REQUEST,
+        };
   }
 
-  async logout(createAuthDto: CreateAuthDto) {
-    await this.redisClient.del(
-      `email:${createAuthDto.email}`,
-      `password:${createAuthDto.password}`,
-    );
+  async logout(email: string) {
+    const result = await this.redisClient.del(`user:${email}`);
+    return result
+      ? {
+          message: 'Usuário deslogado com sucesso',
+          statusCode: HttpStatus.OK,
+        }
+      : {
+          message: 'Erro ao deslogar usuário',
+          statusCode: HttpStatus.BAD_REQUEST,
+        };
   }
 }
