@@ -191,27 +191,29 @@ Siga as etapas para instalar e executar o projeto localmente:
       ```bash
          npm run lint
       ```
+   <br>
    
-   5. Cria e inicie o container docker rodando o Servidor Node com NestJS:
+   5. Criar um Arquivo com as variaveis de ambiente:
+      - Não esquecer de alterar as variavéis da API do Notion, do ID do Banco.
+     
+   ````bash
+       - o arquivo deve conter a seguinte nomenclatura: .env
+       - e deve conter as variaveis de ambiente que estão no arquivo .env.example.
+   ````
+
+   <br>
+   
+   6. Cria e inicie o container docker rodando o Servidor Node com NestJS:
    
        ```bash
          docker-compose up --build
       ```
    </br>
-   
 
-</br>
+ 7. Pronto pode testar as rotas da API, aplicação já está funcional e não é pra ter ocorrido nenhum erro.
 
-  5. Criar um Arquivo com as variaveis de ambiente:
-      - Não esquecer de alterar a variavél da API do Notion, do ID do Banco.
-     
- ````bash
-   - o arquivo de conter a seguinte nomenclatura: .env
-   - e deve conter as variaveis de ambiente que estão no arquivo .env.example.
- ````
-
+  
 <br>
-
 ## Estrutura do Projeto:
    ```bash
       src/: Contém o código-fonte do projeto.
